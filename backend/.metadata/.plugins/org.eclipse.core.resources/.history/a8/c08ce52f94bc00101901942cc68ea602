@@ -1,0 +1,75 @@
+package com.example.demo.services;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.entity.Product;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import com.example.demo.repository.ProductRepository;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class ProductService implements IProductService {
+	
+	private final ProductRepository productRepository;
+
+	@Override
+	public Product saveProduct(Product product) {
+		if (product.getId() != null) {
+		Optional<Product> existingProduct = productRepository.findById(product.getId());
+		if (existingProduct.isPresent()) {
+			throw new RuntimeException("Product with ID " + product.getId() + " already exists.");
+			}
+		
+		}
+		
+		return productRepository.save(product);
+	
+		
+	}
+
+	@Override
+    public List<Product> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        if (products.isEmpty()) {
+            throw new RuntimeException("No products found.");
+        }
+        return products;
+    }
+
+	public Product getProductById(Long id) {
+	    return productRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException("Product not found."));
+	}
+
+	@Override
+	public Product updateProduct(Product product) {
+		
+		Product existingProduct = productRepository.findById(product.getId())
+				.orElseThrow(() -> new RuntimeException("Product not found."));
+		
+		existingProduct.setName(product.getName());
+		existingProduct.setDescription(product.getDescription());
+		existingProduct.setPrice(product.getPrice());
+		existingProduct.setStockQuantity(product.getStockQuantity());
+		existingProduct.setImageUrl(product.getImageUrl());
+		existingProduct.setCategory(product.getCategory());
+		return productRepository.save(existingProduct);
+		
+	}
+
+	@Override
+	public void deleteProduct(Long id) {
+		
+		Product existingProduct = productRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Product not found."));
+		
+		productRepository.delete(existingProduct);
+		
+	}
+
+}
