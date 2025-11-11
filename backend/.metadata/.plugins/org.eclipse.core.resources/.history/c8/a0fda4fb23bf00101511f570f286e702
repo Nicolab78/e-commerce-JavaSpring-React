@@ -1,0 +1,23 @@
+package com.example.demo.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.example.demo.entity.Comment;
+
+public interface CommentRepository extends JpaRepository<Comment, Long> {
+	
+	List<Comment> findByProductIdByCreatedAtDesc(Long productId);
+	
+	List<Comment> findByUserIdByCreatedAtDesc(Long userId);
+	
+	@Query("SELECT AVG(c.rating) FROM Comment c WHERE c.product.id = :productId")
+	Double getAverageRatingByProductId(Long productId);
+	
+	Long countbyProductId(Long productId);
+	
+	boolean existsByIdAndUserId(Long id, Long userId);
+
+}

@@ -1,0 +1,102 @@
+package com.example.demo.services;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.CommentDTO;
+import com.example.demo.entity.Comment;
+import com.example.demo.entity.Product;
+import com.example.demo.entity.User;
+import com.example.demo.repository.CommentRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@Transactional
+@RequiredArgsConstructor
+public class CommentService implements ICommentService {
+	
+	private final CommentRepository commentRepository;
+	private final ProductRepository productRepository;
+	private final UserRepository userRepository;
+
+	@Override
+	public CommentDTO saveComment(Long productId, Long userId, CommentDTO request) {
+		
+		
+		Product product = productRepository.findById(productId)
+				.orElseThrow(() -> new RunTimeException("Product not found with id: " + productId));
+		
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new RunTimeException("User not found with id: " + userId));
+		
+		Comment comment = new Comment();
+		comment.setProductId(product);
+		comment.setUserId(user);
+		comment.setRating(request.getRating());
+		comment.SetComment(request.getComment());
+		
+		Comment savedComment = commentRepository.save(comment);
+		return convertToDTO(savedComment);
+	}
+
+	@Override
+	public List<CommentDTO> getCommentsByProductId(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CommentDTO> getAllComments() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CommentDTO updateComment(Long commentId, Long userId, CommentDTO request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteComment(Long commentId, Long userId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Double getAverageRating(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getCommentCount(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private CommentDTO convertToDTO(Comment comment) {
+        CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setUserId(comment.getUser().getId());
+        dto.setUserName(comment.getUser().getUsername());
+        dto.setProductId(comment.getProduct().getId());
+        dto.setRating(comment.getRating());
+        dto.setComment(comment.getComment());
+        dto.setCreatedAt(comment.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME));
+        return dto;
+    }
+
+	@Override
+	public List<CommentDTO> getCommentsByUserId(Long userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

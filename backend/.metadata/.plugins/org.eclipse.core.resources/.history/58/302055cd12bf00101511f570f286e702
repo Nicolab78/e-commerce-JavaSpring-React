@@ -1,0 +1,57 @@
+package com.example.demo.services;
+
+import java.util.List;
+
+import com.example.demo.dto.CommentDTO;
+
+public class CommentService implements ICommentService {
+
+	@Override
+	public CommentDTO saveComment(Long productId, Long userId, CommentDTO request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CommentDTO> getCommentsByProductId(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CommentDTO> getAllComments() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CommentDTO updateComment(Long commentId, Long userId, CommentDTO request) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void deleteComment(Long commentId, Long userId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Double getAverageRating(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Long getCommentCount(Long productId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<CommentDTO> getCommentsByUserId(Long userId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

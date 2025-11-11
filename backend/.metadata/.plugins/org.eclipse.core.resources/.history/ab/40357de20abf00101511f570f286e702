@@ -1,0 +1,15 @@
+package com.example.demo.repository;
+
+import java.util.List;
+
+import com.example.demo.entity.Comment;
+
+public interface CommentRepository {
+	
+	List<Comment> findByProductIdByCreatedAtDesc(Long productId);
+	List<Comment> findByUserIdByCreatedAtDesc(Long userId);
+	Double getAverageRatingByProductId(Long productId);
+	Long countbyProductId(Long productId);
+	boolean existsByIdAndUserId(Long id, Long userId);
+
+}

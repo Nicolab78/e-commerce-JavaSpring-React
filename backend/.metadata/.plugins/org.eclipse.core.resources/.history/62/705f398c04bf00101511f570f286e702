@@ -1,0 +1,21 @@
+package com.example.ecommerce.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommentRequestDTO {
+    
+    @NotNull(message = "La note est obligatoire")
+    @Min(value = 1, message = "La note minimale est 1")
+    @Max(value = 5, message = "La note maximale est 5")
+    private Integer rating;
+    
+    @NotBlank(message = "Le commentaire ne peut pas être vide")
+    @Size(min = 10, max = 1000, message = "Le commentaire doit contenir entre 10 et 1000 caractères")
+    private String comment;
+}

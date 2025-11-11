@@ -18,6 +18,11 @@ export const AuthService = {
         return response.data;
     },
 
+    login: async (email: string, password: string) => {
+        const response = await api.post("/auth/login", { email, password });
+        return response.data;
+    },
+
     updateUser: async (id: number, user: User): Promise<User> => {
         const response = await api.put(`/auth/users/update/${id}`, user);
         return response.data;

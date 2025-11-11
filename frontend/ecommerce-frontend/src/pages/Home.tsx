@@ -38,6 +38,16 @@ const Home: React.FC = () => {
         }
     };
 
+    if (loading) {
+        return <div>Chargement de la page d'accueil...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
+
+    
+
     return (
         <div className='home'>
             <section className='hero-section'>

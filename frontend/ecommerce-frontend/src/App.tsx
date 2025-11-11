@@ -1,27 +1,27 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
-// Importation des pages
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Header from './components/Header';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
-import Register from './pages/Register';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
-const App: React.FC = () => {
+function App() {
   return (
-    <BrowserRouter>
-      <div className="App">
+    <AuthProvider>
+      <Router>
+        <Header />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
-      </div>
-    </BrowserRouter>
+      </Router>
+    </AuthProvider>
   );
-};
+}
 
 export default App;
