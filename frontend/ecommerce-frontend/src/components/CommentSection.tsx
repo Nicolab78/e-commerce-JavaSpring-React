@@ -3,6 +3,7 @@ import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 import { CommentService } from '../services/commentService';
 import type { Comment } from '../types/Comment';
+import '../assets/css/CommentSection.css';
 
 interface CommentSectionProps {
   productId: number;

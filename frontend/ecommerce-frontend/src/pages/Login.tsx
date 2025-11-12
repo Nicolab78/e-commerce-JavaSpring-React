@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AuthService } from '../services/authService';
 
+import '../assets/css/Login.css';
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();

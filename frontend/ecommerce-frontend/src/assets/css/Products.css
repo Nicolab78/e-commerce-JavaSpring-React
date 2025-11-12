@@ -1,0 +1,12 @@
+.products-page {
+  padding: 32px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.products-page h1 {
+  font-size: 24px;
+  margin-bottom: 24px;
+  text-align: center;
+}

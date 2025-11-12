@@ -7,6 +7,8 @@ import { ProductService } from '../services/productService';
 import type { Category } from '../types/Category';
 import type { Product } from '../types/Product';
 
+import '../assets/css/Home.css';
+
 const Home: React.FC = () => {
 
     const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -46,7 +48,7 @@ const Home: React.FC = () => {
         return <div>{error}</div>;
     }
 
-    
+
 
     return (
         <div className='home'>

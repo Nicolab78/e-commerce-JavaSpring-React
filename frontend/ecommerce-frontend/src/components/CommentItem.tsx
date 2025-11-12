@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Comment } from '../types/Comment';
+import '../assets/css/CommentItem.css';
 
 interface CommentItemProps {
   comment: Comment;

@@ -5,6 +5,7 @@ import ProductDetailCard from '../components/ProductDetailCard';
 import { useAuth } from '../context/AuthContext';
 import type { Product } from '../types/Product';
 
+
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth(); 

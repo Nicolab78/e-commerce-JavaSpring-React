@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CommentSection from './CommentSection';
 import type { Product } from '../types/Product';
+import '../assets/css/ProductDetailCard.css';
 
 interface ProductDetailCardProps {
   product: Product;

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import '../assets/css/CommentForm.css';
+
 interface CommentFormProps {
   onSubmit: (rating: number, comment: string) => void;
   loading?: boolean;

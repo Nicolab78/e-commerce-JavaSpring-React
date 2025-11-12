@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ProductService } from '../services/productService';
 import ProductList from '../components/ProductList';
 import type { Product } from '../types/Product';
+import '../assets/css/Products.css';
+
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);

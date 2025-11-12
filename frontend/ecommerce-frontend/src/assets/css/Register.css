@@ -1,0 +1,77 @@
+.register-page {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 32px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.register-page h1 {
+  text-align: center;
+  margin-bottom: 24px;
+  font-size: 24px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: -8px;
+}
+
+button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button[type="submit"]:hover {
+  background-color: #218838;
+}
+
+.register-page p {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.register-page a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.register-page a:hover {
+  text-decoration: underline;
+}
