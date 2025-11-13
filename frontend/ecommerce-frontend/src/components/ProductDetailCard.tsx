@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CommentSection from './CommentSection';
 import type { Product } from '../types/Product';
+import { motion } from 'framer-motion';
 import '../assets/css/ProductDetailCard.css';
 
 interface ProductDetailCardProps {
@@ -11,6 +12,7 @@ interface ProductDetailCardProps {
 
 const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product, currentUserId }) => {
   const navigate = useNavigate();
+  const [showComments, setShowComments] = useState(false);
 
   return (
     <>
@@ -31,11 +33,23 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product, currentU
             <button disabled={product.stockQuantity === 0}>
               Ajouter au panier
             </button>
+
+            <button onClick={() => setShowComments(prev => !prev)} className="btn-toggle-comments">
+              {showComments ? 'Masquer les commentaires' : 'Afficher les commentaires'}
+            </button>
           </div>
         </div>
       </div>
-      
-      <CommentSection productId={product.id} currentUserId={currentUserId} />
+
+      {showComments && (
+  <motion.div
+    initial={{ opacity: 0, y: 40 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, ease: 'easeOut' }}
+  >
+    <CommentSection productId={product.id} currentUserId={currentUserId} />
+  </motion.div>
+)}
     </>
   );
 };

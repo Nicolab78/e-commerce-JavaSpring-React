@@ -3,7 +3,7 @@ import { ProductService } from '../services/productService';
 import ProductList from '../components/ProductList';
 import type { Product } from '../types/Product';
 import '../assets/css/Products.css';
-
+import Skeleton from 'react-loading-skeleton';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,8 +27,13 @@ const Products: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <div>Chargement des produits...</div>;
+      if (loading) {
+    return (
+      <div>
+        <Skeleton height={40} width={300} />
+        <Skeleton count={5} />
+      </div>
+    );
   }
 
   if (error) {

@@ -7,6 +7,12 @@ import { ProductService } from '../services/productService';
 import type { Category } from '../types/Category';
 import type { Product } from '../types/Product';
 
+import { Typewriter } from 'react-simple-typewriter';
+import { FaBoxOpen } from 'react-icons/fa';
+import Skeleton from 'react-loading-skeleton';
+import { motion } from 'framer-motion';
+
+
 import '../assets/css/Home.css';
 
 const Home: React.FC = () => {
@@ -41,8 +47,13 @@ const Home: React.FC = () => {
     };
 
     if (loading) {
-        return <div>Chargement de la page d'accueil...</div>;
-    }
+  return (
+    <div>
+      <Skeleton height={40} width={300} />
+      <Skeleton count={5} />
+    </div>
+  );
+}
 
     if (error) {
         return <div>{error}</div>;
@@ -53,8 +64,16 @@ const Home: React.FC = () => {
     return (
         <div className='home'>
             <section className='hero-section'>
-                <h1>Bienvenue sur notre E commerce</h1>
-                <p>Découvrez nos produits de qualités</p>
+                <h1>
+                <Typewriter
+                    words={['Bienvenue sur notre E-commerce', 'Découvrez nos produits de qualité']}
+                    loop
+                     cursor
+                    typeSpeed={80}
+                    deleteSpeed={50}
+                    delaySpeed={1000}
+                />
+                </h1>
 
                 <Link to='/products' >
                     <button className='btn-primary'>Voir tout les produits</button>
@@ -71,7 +90,7 @@ const Home: React.FC = () => {
                             to={`/products?category=${category.id}`}
                             className='category-card'
                         >
-                            <div className='category-icon'>📦</div>
+                            <div className='category-icon'><FaBoxOpen size={24} /></div>
                             <h3>{category.name}</h3>
                             <h3>{category.description}</h3>
 
@@ -85,11 +104,19 @@ const Home: React.FC = () => {
             </section>
 
             <section className="featured-products">
+                
                 <h2>Produits Populaires</h2>
+                
                 <div className="products-grid">
-                {featuredProducts.map((product) => (
+                {featuredProducts.map((product, index) => (
                     
-                    <div key={product.id} className="product-card">
+                    <motion.div
+                        key={product.id}
+                        className="product-card"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: index * 0.1 }}
+                    >
                     <Link to={`/products/${product.id}`}>
                         
                         <img 
@@ -103,7 +130,9 @@ const Home: React.FC = () => {
                         <p className="stock">Stock: {product.stockQuantity}</p>
                         <button className="btn-secondary">Voir détails</button>
                     </Link>
-                    </div>
+                    </motion.div>
+                    
+                    
           ))}
         </div>
         <div className="view-all">
@@ -111,6 +140,7 @@ const Home: React.FC = () => {
             <button className="btn-outline">Voir tous les produits →</button>
           </Link>
         </div>
+        
       </section>
 
         </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
+import { motion } from 'framer-motion';
 import { CommentService } from '../services/commentService';
 import type { Comment } from '../types/Comment';
 import '../assets/css/CommentSection.css';
@@ -16,6 +17,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
+  const [showForm, setShowForm] = useState<boolean>(false);
 
   useEffect(() => {
     fetchComments();
@@ -45,7 +47,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
     try {
       setSubmitting(true);
       setError('');
-      
+
       if (editingComment) {
         const updatedComment = await CommentService.updateComment(
           editingComment.id,
@@ -59,6 +61,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
         const newComment = await CommentService.addComment(productId, currentUserId, rating, comment);
         setComments([newComment, ...comments]);
       }
+
+      setShowForm(false);
     } catch (err: any) {
       console.error('Erreur lors de l\'ajout du commentaire:', err);
       setError(err.response?.data || 'Erreur lors de l\'ajout du commentaire');
@@ -83,17 +87,26 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
 
   const handleEditComment = (comment: Comment) => {
     setEditingComment(comment);
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCancelEdit = () => {
     setEditingComment(null);
+    setShowForm(false); 
   };
 
   return (
     <div className="comment-section">
       {currentUserId && (
-        <div>
+        <>
+          <button
+            className="btn-toggle-comments"
+            onClick={() => setShowForm(prev => !prev)}
+          >
+            {showForm ? 'Masquer le formulaire' : 'Laisser un commentaire'}
+          </button>
+
           {editingComment && (
             <div className="edit-mode-banner">
               <span>Mode édition</span>
@@ -102,14 +115,23 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
               </button>
             </div>
           )}
-          <CommentForm 
-            onSubmit={handleSubmitComment} 
-            loading={submitting}
-            initialRating={editingComment?.rating}
-            initialComment={editingComment?.comment}
-            buttonText={editingComment ? 'Modifier' : 'Publier'}
-          />
-        </div>
+
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <CommentForm 
+                onSubmit={handleSubmitComment} 
+                loading={submitting}
+                initialRating={editingComment?.rating}
+                initialComment={editingComment?.comment}
+                buttonText={editingComment ? 'Modifier' : 'Publier'}
+              />
+            </motion.div>
+          )}
+        </>
       )}
 
       {error && <div className="error-message">{error}</div>}
