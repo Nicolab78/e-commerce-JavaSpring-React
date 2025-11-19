@@ -22,7 +22,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Charger l'utilisateur au démarrage
   useEffect(() => {
     console.log("[AuthContext] init -> lecture localStorage");
     const raw = localStorage.getItem("user");
@@ -68,7 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook useAuth (exporté)
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) {
