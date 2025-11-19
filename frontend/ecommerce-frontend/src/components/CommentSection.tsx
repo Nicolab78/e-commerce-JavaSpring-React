@@ -52,7 +52,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
       if (editingComment) {
         const updatedComment = await CommentService.updateComment(
           editingComment.id,
-          user.id,   // ✅ on utilise l’id du user connecté
+          user.id,  
           rating,
           comment
         );
@@ -133,7 +133,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
       ) : (
         <CommentList 
           comments={comments} 
-          currentUserId={user?.id}   // ✅ on passe l’id du user connecté
+          currentUserId={user?.id} 
           onDelete={handleDeleteComment}
           onEdit={handleEditComment}
         />

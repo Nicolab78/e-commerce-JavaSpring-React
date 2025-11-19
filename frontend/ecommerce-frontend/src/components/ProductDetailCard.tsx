@@ -7,10 +7,9 @@ import '../assets/css/ProductDetailCard.css';
 
 interface ProductDetailCardProps {
   product: Product;
-  currentUserId?: number;
 }
 
-const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product, currentUserId }) => {
+const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
   const navigate = useNavigate();
   const [showComments, setShowComments] = useState(false);
 
@@ -47,7 +46,7 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product, currentU
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.8, ease: 'easeOut' }}
   >
-    <CommentSection productId={product.id} currentUserId={currentUserId} />
+    <CommentSection productId={product.id}/>
   </motion.div>
 )}
     </>
