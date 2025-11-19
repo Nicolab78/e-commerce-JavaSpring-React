@@ -1,8 +1,28 @@
 export interface User {
   id: number;
   username: string;
-  email: string; // Optionnel car on ne le récupère jamais du backend
+  email: string;
   role: string;
-  active: boolean;
+  enabled: boolean;  
   phoneNumber?: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  phoneNumber?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
 }

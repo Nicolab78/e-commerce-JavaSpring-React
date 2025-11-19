@@ -2,34 +2,60 @@ import api from "./api";
 import type { User } from "../types/User";
 
 export const AuthService = {
+  getAllUsers: async (): Promise<User[]> => {
+    const response = await api.get<User[]>("/users");
+    return response.data;
+  },
 
-    getAllUsers: async (): Promise<User[]> => {
-        const response = await api.get<User[]>("/auth/users");
-        return response.data;
-    },
+  getUserById: async (id: number): Promise<User> => {
+    const response = await api.get<User>(`/users/${id}`);
+    return response.data;
+  },
 
-    getUserById: async (id: number): Promise<User> => {
-        const response = await api.get<User>(`/auth/users/${id}`);
-        return response.data;
-    },
+  register: async (userData: Omit<User, "id" | "role" | "enabled"> & { password: string }): Promise<{ user: User; accessToken: string; refreshToken: string }> => {
+    const response = await api.post("/auth/register", userData);
+    const data = response.data;
 
-    register : async (user: Omit<User, "id">): Promise<User> => {
-        const response = await api.post<User>("/auth/register", user);
-        return response.data;
-    },
+    const user: User = {
+        id: data.id, 
+        username: data.username,
+        email: data.email,
+        role: data.role,
+        enabled: true,
+        phoneNumber: data.phoneNumber,
+    };
 
-    login: async (email: string, password: string) => {
-        const response = await api.post("/auth/login", { email, password });
-        return response.data;
-    },
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
 
-    updateUser: async (id: number, user: User): Promise<User> => {
-        const response = await api.put(`/auth/users/update/${id}`, user);
-        return response.data;
-    },
+    return { user, accessToken: data.accessToken, refreshToken: data.refreshToken };
+  },
 
-    deleteUser: async (id: number): Promise<void> => {
-        await api.delete(`/auth/users/delete/${id}`);
-    },
+  login: async (email: string, password: string): Promise<{ user: User; accessToken: string; refreshToken: string }> => {
+    const response = await api.post("/auth/login", { email, password });
+    const data = response.data;
 
-}
+    const user: User = {
+    id: data.id, 
+    username: data.username,
+    email: data.email,
+    role: data.role,
+    enabled: true,
+    phoneNumber: data.phoneNumber, 
+  };
+
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+
+    return { user, accessToken: data.accessToken, refreshToken: data.refreshToken };
+  },
+
+  updateUser: async (id: number, user: Partial<User>): Promise<User> => {
+    const response = await api.put<User>(`/users/${id}`, user);
+    return response.data;
+  },
+
+  deleteUser: async (id: number): Promise<void> => {
+    await api.delete(`/users/${id}`);
+  },
+};

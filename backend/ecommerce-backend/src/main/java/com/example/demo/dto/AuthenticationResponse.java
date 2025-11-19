@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
+public class AuthenticationResponse {
+
+    private String accessToken;
+    private String refreshToken;
     private Long id;
     private String username;
     private String email;
     private String role;
-    private boolean enabled;
-    private String phoneNumber;
 }

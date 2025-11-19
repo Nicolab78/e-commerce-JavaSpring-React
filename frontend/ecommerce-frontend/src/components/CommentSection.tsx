@@ -4,14 +4,15 @@ import CommentList from './CommentList';
 import { motion } from 'framer-motion';
 import { CommentService } from '../services/commentService';
 import type { Comment } from '../types/Comment';
+import { useAuth } from '../context/AuthContext';   
 import '../assets/css/CommentSection.css';
 
 interface CommentSectionProps {
   productId: number;
-  currentUserId?: number;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserId }) => {
+const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
+  const { isAuthenticated, user } = useAuth();   
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -39,7 +40,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
   };
 
   const handleSubmitComment = async (rating: number, comment: string) => {
-    if (!currentUserId) {
+    if (!user) {
       alert('Vous devez être connecté pour laisser un avis');
       return;
     }
@@ -51,14 +52,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
       if (editingComment) {
         const updatedComment = await CommentService.updateComment(
           editingComment.id,
-          currentUserId,
+          user.id,   // ✅ on utilise l’id du user connecté
           rating,
           comment
         );
         setComments(comments.map(c => c.id === updatedComment.id ? updatedComment : c));
         setEditingComment(null);
       } else {
-        const newComment = await CommentService.addComment(productId, currentUserId, rating, comment);
+        const newComment = await CommentService.addComment(productId, user.id, rating, comment);
         setComments([newComment, ...comments]);
       }
 
@@ -72,11 +73,11 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
   };
 
   const handleDeleteComment = async (commentId: number) => {
-    if (!currentUserId) return;
+    if (!user) return;
 
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
       try {
-        await CommentService.deleteComment(commentId, currentUserId);
+        await CommentService.deleteComment(commentId, user.id);
         setComments(comments.filter(c => c.id !== commentId));
       } catch (err: any) {
         console.error('Erreur lors de la suppression:', err);
@@ -98,23 +99,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
 
   return (
     <div className="comment-section">
-      {currentUserId && (
+      {isAuthenticated && (
         <>
           <button
             className="btn-toggle-comments"
             onClick={() => setShowForm(prev => !prev)}
           >
-            {showForm ? 'Masquer le formulaire' : 'Laisser un commentaire'}
+            {showForm ? "Masquer le formulaire" : "Laisser un commentaire"}
           </button>
-
-          {editingComment && (
-            <div className="edit-mode-banner">
-              <span>Mode édition</span>
-              <button onClick={handleCancelEdit} className="btn-cancel">
-                Annuler
-              </button>
-            </div>
-          )}
 
           {showForm && (
             <motion.div
@@ -122,12 +114,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <CommentForm 
-                onSubmit={handleSubmitComment} 
+              <CommentForm
+                onSubmit={handleSubmitComment}
                 loading={submitting}
                 initialRating={editingComment?.rating}
                 initialComment={editingComment?.comment}
-                buttonText={editingComment ? 'Modifier' : 'Publier'}
+                buttonText={editingComment ? "Modifier" : "Publier"}
               />
             </motion.div>
           )}
@@ -141,7 +133,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId, currentUserI
       ) : (
         <CommentList 
           comments={comments} 
-          currentUserId={currentUserId}
+          currentUserId={user?.id}   // ✅ on passe l’id du user connecté
           onDelete={handleDeleteComment}
           onEdit={handleEditComment}
         />
