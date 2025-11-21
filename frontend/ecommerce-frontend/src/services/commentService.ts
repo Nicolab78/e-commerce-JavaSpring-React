@@ -7,24 +7,25 @@ export class CommentService {
     return response.data;
   }
 
-  static async addComment(productId: number, userId: number, rating: number, comment: string): Promise<Comment> {
-    const response = await api.post(`/comments/products/${productId}/users/${userId}`, {
+  
+  static async addComment(productId: number, rating: number, comment: string): Promise<Comment> {
+    const response = await api.post(`/comments/products/${productId}`, {
       rating,
       comment
     });
     return response.data;
   }
 
-  static async updateComment(commentId: number, userId: number, rating: number, comment: string): Promise<Comment> {
-    const response = await api.put(`/comments/${commentId}/users/${userId}`, {
+  static async updateComment(commentId: number, rating: number, comment: string): Promise<Comment> {
+    const response = await api.put(`/comments/${commentId}`, {
       rating,
       comment
     });
     return response.data;
   }
 
-  static async deleteComment(commentId: number, userId: number): Promise<void> {
-    await api.delete(`/comments/${commentId}/users/${userId}`);
+  static async deleteComment(commentId: number): Promise<void> {
+    await api.delete(`/comments/${commentId}`);
   }
 
   static async getAverageRating(productId: number): Promise<number> {

@@ -7,7 +7,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartDTO {
+public class CartResponse {
     private Long id;
     private List<CartItemDTO> items;
     private Double totalPrice;

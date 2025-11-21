@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderDTO {
+public class OrderResponse {
     private Long id;
     private Long userId;
     private List<OrderItemDTO> items;

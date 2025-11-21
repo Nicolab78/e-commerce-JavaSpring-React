@@ -27,7 +27,8 @@ public class Order {
     private User user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
 
     private Double totalPrice;
 

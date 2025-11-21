@@ -27,7 +27,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponseDto saveUser(UserRequestDto userRequestDto) {
-        
+
         Optional<User> existingUser = userRepository.findByEmail(userRequestDto.getEmail());
         if (existingUser.isPresent()) {
             throw new RuntimeException("User with email " + userRequestDto.getEmail() + " already exists.");

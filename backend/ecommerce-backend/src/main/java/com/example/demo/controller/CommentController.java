@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.CommentDTO;
 import com.example.demo.dto.CommentRequestDTO;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.services.CommentService;
 
 import jakarta.validation.Valid;
@@ -18,22 +20,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")
 public class CommentController {
-    
+
     private final CommentService commentService;
-    
-    @PostMapping("/products/{productId}/users/{userId}")
+    private final UserRepository userRepository;
+
+    @PostMapping("/products/{productId}")
     public ResponseEntity<?> createComment(
             @PathVariable Long productId,
-            @PathVariable Long userId,
-            @Valid @RequestBody CommentRequestDTO request) {
+            @Valid @RequestBody CommentRequestDTO request,
+            Authentication authentication) {
         try {
+            Long userId = getUserIdFromAuth(authentication);
             CommentDTO comment = commentService.saveComment(productId, userId, request);
             return ResponseEntity.status(HttpStatus.CREATED).body(comment);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/products/{productId}")
     public ResponseEntity<?> getCommentsByProductId(@PathVariable Long productId) {
         try {
@@ -43,7 +47,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-    
+
     @GetMapping
     public ResponseEntity<?> getAllComments() {
         try {
@@ -53,7 +57,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getCommentById(@PathVariable Long id) {
         try {
@@ -63,32 +67,34 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-    
-    @PutMapping("/{commentId}/users/{userId}")
+
+    @PutMapping("/{commentId}")
     public ResponseEntity<?> updateComment(
             @PathVariable Long commentId,
-            @PathVariable Long userId,
-            @Valid @RequestBody CommentRequestDTO request) {
+            @Valid @RequestBody CommentRequestDTO request,
+            Authentication authentication) {
         try {
+            Long userId = getUserIdFromAuth(authentication);
             CommentDTO comment = commentService.updateComment(commentId, userId, request);
             return ResponseEntity.ok(comment);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
-    @DeleteMapping("/{commentId}/users/{userId}")
+
+    @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(
             @PathVariable Long commentId,
-            @PathVariable Long userId) {
+            Authentication authentication) {
         try {
+            Long userId = getUserIdFromAuth(authentication);
             commentService.deleteComment(commentId, userId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/products/{productId}/rating")
     public ResponseEntity<?> getAverageRating(@PathVariable Long productId) {
         try {
@@ -98,7 +104,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/products/{productId}/count")
     public ResponseEntity<?> getCommentCount(@PathVariable Long productId) {
         try {
@@ -108,7 +114,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-    
+
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getCommentsByUserId(@PathVariable Long userId) {
         try {
@@ -117,5 +123,21 @@ public class CommentController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    private Long getUserIdFromAuth(Authentication authentication) {
+        System.out.println("=== getUserIdFromAuth ===");
+
+        if (authentication == null) {
+            throw new RuntimeException("No authentication found");
+        }
+
+        String identifier = authentication.getName();
+        System.out.println("Identifier extrait du JWT: " + identifier);
+
+        return userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + identifier))
+                .getId();
     }
 }

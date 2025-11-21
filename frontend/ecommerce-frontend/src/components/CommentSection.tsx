@@ -39,52 +39,53 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
     }
   };
 
+  
+
   const handleSubmitComment = async (rating: number, comment: string) => {
-    if (!user) {
-      alert('Vous devez être connecté pour laisser un avis');
-      return;
+  if (!user) {
+    alert('Vous devez être connecté pour laisser un avis');
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+    setError('');
+
+    if (editingComment) {
+      const updatedComment = await CommentService.updateComment(
+        editingComment.id,
+        rating,
+        comment
+      );
+      setComments(comments.map(c => c.id === updatedComment.id ? updatedComment : c));
+      setEditingComment(null);
+    } else {
+      const newComment = await CommentService.addComment(productId, rating, comment);
+      setComments([newComment, ...comments]);
     }
 
+    setShowForm(false);
+  } catch (err: any) {
+    console.error('Erreur lors de l\'ajout du commentaire:', err);
+    setError(err.response?.data || 'Erreur lors de l\'ajout du commentaire');
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+const handleDeleteComment = async (commentId: number) => {
+  if (!user) return;
+
+  if (window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
     try {
-      setSubmitting(true);
-      setError('');
-
-      if (editingComment) {
-        const updatedComment = await CommentService.updateComment(
-          editingComment.id,
-          user.id,  
-          rating,
-          comment
-        );
-        setComments(comments.map(c => c.id === updatedComment.id ? updatedComment : c));
-        setEditingComment(null);
-      } else {
-        const newComment = await CommentService.addComment(productId, user.id, rating, comment);
-        setComments([newComment, ...comments]);
-      }
-
-      setShowForm(false);
+      await CommentService.deleteComment(commentId);
+      setComments(comments.filter(c => c.id !== commentId));
     } catch (err: any) {
-      console.error('Erreur lors de l\'ajout du commentaire:', err);
-      setError(err.response?.data || 'Erreur lors de l\'ajout du commentaire');
-    } finally {
-      setSubmitting(false);
+      console.error('Erreur lors de la suppression:', err);
+      alert(err.response?.data || 'Erreur lors de la suppression');
     }
-  };
-
-  const handleDeleteComment = async (commentId: number) => {
-    if (!user) return;
-
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
-      try {
-        await CommentService.deleteComment(commentId, user.id);
-        setComments(comments.filter(c => c.id !== commentId));
-      } catch (err: any) {
-        console.error('Erreur lors de la suppression:', err);
-        alert(err.response?.data || 'Erreur lors de la suppression');
-      }
-    }
-  };
+  }
+};
 
   const handleEditComment = (comment: Comment) => {
     setEditingComment(comment);
