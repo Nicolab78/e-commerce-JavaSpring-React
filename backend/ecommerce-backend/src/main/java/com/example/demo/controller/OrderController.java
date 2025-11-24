@@ -50,9 +50,18 @@ public class OrderController {
     }
 
     private Long getUserIdFromAuth(Authentication authentication) {
-        String email = authentication.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"))
+        System.out.println("=== getUserIdFromAuth ===");
+
+        if (authentication == null) {
+            throw new RuntimeException("No authentication found");
+        }
+
+        String identifier = authentication.getName();
+        System.out.println("Identifier extrait du JWT: " + identifier);
+
+        return userRepository.findByUsername(identifier)
+                .or(() -> userRepository.findByEmail(identifier))
+                .orElseThrow(() -> new RuntimeException("User not found with identifier: " + identifier))
                 .getId();
     }
 }

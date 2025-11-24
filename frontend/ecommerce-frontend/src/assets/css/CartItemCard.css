@@ -1,0 +1,98 @@
+.cart-item-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: opacity 0.2s ease;
+}
+
+.cart-item-card.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cart-item-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-details h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.item-price {
+  font-size: 14px;
+  color: #28a745;
+  font-weight: 500;
+}
+
+.item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-controls button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.quantity-controls button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.quantity-controls input {
+  width: 50px;
+  text-align: center;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.item-subtotal {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.btn-remove {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-remove:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background-color: #c82333;
+}

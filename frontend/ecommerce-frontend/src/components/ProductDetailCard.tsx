@@ -4,6 +4,8 @@ import CommentSection from './CommentSection';
 import type { Product } from '../types/Product';
 import { motion } from 'framer-motion';
 import '../assets/css/ProductDetailCard.css';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 interface ProductDetailCardProps {
   product: Product;
@@ -11,7 +13,27 @@ interface ProductDetailCardProps {
 
 const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
+  const [adding, setAdding] = useState(false);
   const [showComments, setShowComments] = useState(false);
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      alert('Vous devez être connecté pour ajouter au panier');
+      return;
+    }
+
+    try {
+      setAdding(true);
+      await addToCart(product.id, 1);
+      alert('Produit ajouté au panier !');
+    } catch (error) {
+      alert('Erreur lors de l\'ajout au panier');
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <>
@@ -29,8 +51,10 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
                 ? `En stock (${product.stockQuantity})` 
                 : 'Rupture de stock'}
             </p>
-            <button disabled={product.stockQuantity === 0}>
-              Ajouter au panier
+            <button onClick={handleAddToCart}
+            disabled={product.stockQuantity === 0 || adding}
+           >
+          {adding ? 'Ajout...' : 'Ajouter au panier'}
             </button>
 
             <button onClick={() => setShowComments(prev => !prev)} className="btn-toggle-comments">
