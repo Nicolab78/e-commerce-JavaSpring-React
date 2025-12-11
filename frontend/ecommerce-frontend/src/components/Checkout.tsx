@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { OrderService } from '../services/orderService';
+import { orderService } from '../services/orderService';
+import { useAuth } from '../context/AuthContext';
 import '../assets/css/Checkout.css';
 
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { cart, refreshCart } = useCart();
+  const { user } = useAuth();
   const [shippingAddress, setShippingAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,22 +26,27 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (shippingAddress.length < 10) {
-      setError('L\'adresse doit contenir au moins 10 caractères');
+      setError("L'adresse doit contenir au moins 10 caractères");
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      
-      const order = await OrderService.createOrder(shippingAddress);
-      
+
+      if (!user) {
+        setError("Vous devez être connecté pour passer une commande");
+        return;
+      }
+
+      const order = await orderService.createOrder(user.id, { shippingAddress });
+
       await refreshCart();
-      
-      navigate(`/orders/${order.id}`, { 
-        state: { message: 'Commande passée avec succès !' } 
+
+      navigate(`/orders/${order.id}`, {
+        state: { message: 'Commande passée avec succès !' }
       });
     } catch (err: any) {
       console.error('Erreur lors de la commande:', err);
@@ -66,11 +73,11 @@ const Checkout: React.FC = () => {
               minLength={10}
               maxLength={500}
             />
-            
+
             {error && <div className="error-message">{error}</div>}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading || !shippingAddress}
               className="btn-submit"
             >
@@ -81,11 +88,11 @@ const Checkout: React.FC = () => {
 
         <div className="checkout-summary">
           <h2>Récapitulatif</h2>
-          
+
           <div className="summary-items">
             {cart.items.map((item) => (
               <div key={item.id} className="summary-item">
-                <span>{item.productName} x{item.quantity}</span>
+                <span>{item.product.name} x{item.quantity}</span>
                 <span>{item.subtotal.toFixed(2)} €</span>
               </div>
             ))}

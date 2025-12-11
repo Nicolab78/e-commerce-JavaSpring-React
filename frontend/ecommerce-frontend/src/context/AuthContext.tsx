@@ -1,76 +1,90 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { ReactNode } from "react";
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-  enabled: boolean;
-  phoneNumber?: string;
-}
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import { authService } from '../services/authService';
+import type { User } from '../types/User';
+import type { LoginDto, RegisterDto, AuthResponseDto } from '../types/Auth';
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isAuthenticated: boolean;
-  login: (user: User) => void;
+  login: (credentials: LoginDto) => Promise<void>;
+  register: (data: RegisterDto) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log("[AuthContext] init -> lecture localStorage");
-    const raw = localStorage.getItem("user");
-    if (raw) {
-      try {
-        const parsed: User = JSON.parse(raw);
-        console.log("[AuthContext] user restauré:", parsed);
-        setUser(parsed);
-      } catch (e) {
-        console.error("[AuthContext] erreur parse user:", e);
-        localStorage.removeItem("user");
-      }
-    } else {
-      console.log("[AuthContext] aucun user en localStorage");
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser.user);
+      setToken(currentUser.token);
     }
+    setLoading(false);
   }, []);
 
-  const login = (u: User) => {
-    console.log("[AuthContext] login:", u);
-    setUser(u);
-    localStorage.setItem("user", JSON.stringify(u));
-  };
-
-  const logout = () => {
-    console.log("[AuthContext] logout");
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const login = async (credentials: LoginDto) => {
+  try {
+    const response: AuthResponseDto = await authService.login(credentials);
+    
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('tokenType', response.type);  
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setUser(response.user);
+    setToken(response.token);
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
 };
 
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error("useAuth must be used within AuthProvider");
+const register = async (data: RegisterDto) => {
+  try {
+    const response: AuthResponseDto = await authService.register(data);
+    
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('tokenType', response.type);
+    localStorage.setItem('user', JSON.stringify(response.user));
+    
+    setUser(response.user);
+    setToken(response.token);
+  } catch (error) {
+    console.error('Register error:', error);
+    throw error;
   }
-  return ctx;
+};
+
+  const logout = () => {
+    authService.logout();
+    setUser(null);
+    setToken(null);
+  };
+
+  const value: AuthContextType = {
+    user,
+    token,
+    isAuthenticated: !!token,
+    login,
+    register,
+    logout,
+    loading,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

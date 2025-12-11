@@ -2,14 +2,12 @@ package com.example.demo.services;
 
 import java.util.List;
 
-import com.example.demo.dto.UserRequestDto;
-import com.example.demo.dto.UserResponseDto;
+import com.example.demo.dto.user.UpdateUserDto;
+import com.example.demo.dto.user.UserDto;
 
 public interface IUserService {
-    
-    UserResponseDto saveUser(UserRequestDto userRequestDto);
-    List<UserResponseDto> getAllUsers();
-    UserResponseDto getUserById(Long id);
-    UserResponseDto updateUser(Long id, UserRequestDto userRequestDto);
+    List<UserDto> getAllUsers();
+    UserDto getUserById(Long id);
+    UserDto updateUser(Long id, UpdateUserDto updateUserDto);
     void deleteUser(Long id);
 }

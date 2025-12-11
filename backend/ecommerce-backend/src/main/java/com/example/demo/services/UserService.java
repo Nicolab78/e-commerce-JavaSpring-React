@@ -1,16 +1,13 @@
-package com.example.demo.service;
+package com.example.demo.services;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.example.demo.services.IUserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.dto.UserRequestDto;
-import com.example.demo.dto.UserResponseDto;
-import com.example.demo.entity.Role;
+import com.example.demo.dto.user.UpdateUserDto;
+import com.example.demo.dto.user.UserDto;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 
@@ -26,21 +23,7 @@ public class UserService implements IUserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserResponseDto saveUser(UserRequestDto userRequestDto) {
-
-        Optional<User> existingUser = userRepository.findByEmail(userRequestDto.getEmail());
-        if (existingUser.isPresent()) {
-            throw new RuntimeException("User with email " + userRequestDto.getEmail() + " already exists.");
-        }
-
-        User user = mapToEntity(userRequestDto);
-        userRepository.save(user);
-
-        return mapToDto(user);
-    }
-
-    @Override
-    public List<UserResponseDto> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         List<User> users = userRepository.findByEnabled(true);
         if (users.isEmpty()) {
             throw new RuntimeException("No active users found.");
@@ -51,7 +34,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserResponseDto getUserById(Long id) {
+    public UserDto getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User with ID " + id + " not found."));
 
@@ -63,7 +46,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
+    public UserDto updateUser(Long id, UpdateUserDto updateUserDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User with ID " + id + " not found."));
 
@@ -71,18 +54,14 @@ public class UserService implements IUserService {
             throw new RuntimeException("Cannot update inactive user.");
         }
 
-        user.setUsername(userRequestDto.getUsername());
-        user.setEmail(userRequestDto.getEmail());
+        user.setUsername(updateUserDto.getUsername());
+        user.setEmail(updateUserDto.getEmail());
 
-        if (userRequestDto.getPassword() != null && !userRequestDto.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+        if (updateUserDto.getPassword() != null && !updateUserDto.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updateUserDto.getPassword()));
         }
 
-        user.setPhoneNumber(userRequestDto.getPhoneNumber());
-
-        if (userRequestDto.getRole() != null) {
-            user.setRole(userRequestDto.getRole());
-        }
+        user.setPhoneNumber(updateUserDto.getPhoneNumber());
 
         userRepository.save(user);
         return mapToDto(user);
@@ -97,22 +76,8 @@ public class UserService implements IUserService {
         userRepository.save(user);
     }
 
-    private User mapToEntity(UserRequestDto dto) {
-        return User.builder()
-                .username(dto.getUsername())
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .phoneNumber(dto.getPhoneNumber())
-                .role(dto.getRole() != null ? dto.getRole() : Role.USER)
-                .enabled(true)
-                .accountNonExpired(true)
-                .accountNonLocked(true)
-                .credentialsNonExpired(true)
-                .build();
-    }
-
-    private UserResponseDto mapToDto(User user) {
-        return UserResponseDto.builder()
+    public UserDto mapToDto(User user) {
+        return UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())

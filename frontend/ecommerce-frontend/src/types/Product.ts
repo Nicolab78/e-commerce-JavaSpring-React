@@ -8,6 +8,22 @@ export interface Product {
   stockQuantity: number;
   imageUrl: string;
   category: Category;
-  createdAt?: string;
-  updatedAt?: string;
+}
+
+export interface CreateProductDto {
+  name: string;
+  description: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl: string;
+  categoryId: number;
+}
+
+export interface UpdateProductDto {
+  name: string;
+  description: string;
+  price: number;
+  stockQuantity: number;
+  imageUrl: string;
+  categoryId: number;
 }

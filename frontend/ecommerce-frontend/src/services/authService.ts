@@ -1,61 +1,39 @@
-import api from "./api";
-import type { User } from "../types/User";
+import api from './api';
+import type { LoginDto, RegisterDto, AuthResponseDto } from '../types/Auth';
 
-export const AuthService = {
-  getAllUsers: async (): Promise<User[]> => {
-    const response = await api.get<User[]>("/users");
+export const authService = {
+  login: async (credentials: LoginDto): Promise<AuthResponseDto> => {
+    const response = await api.post('/auth/login', credentials);
     return response.data;
   },
 
-  getUserById: async (id: number): Promise<User> => {
-    const response = await api.get<User>(`/users/${id}`);
+  register: async (data: RegisterDto): Promise<AuthResponseDto> => {
+    const response = await api.post('/auth/register', data);
     return response.data;
   },
 
-  register: async (userData: Omit<User, "id" | "role" | "enabled"> & { password: string }): Promise<{ user: User; accessToken: string; refreshToken: string }> => {
-    const response = await api.post("/auth/register", userData);
-    const data = response.data;
-
-    const user: User = {
-        id: data.id, 
-        username: data.username,
-        email: data.email,
-        role: data.role,
-        enabled: true,
-        phoneNumber: data.phoneNumber,
-    };
-
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
-
-    return { user, accessToken: data.accessToken, refreshToken: data.refreshToken };
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('tokenType');
+    localStorage.removeItem('user');
   },
 
-  login: async (email: string, password: string): Promise<{ user: User; accessToken: string; refreshToken: string }> => {
-    const response = await api.post("/auth/login", { email, password });
-    const data = response.data;
+  getCurrentUser: (): AuthResponseDto | null => {
+    const token = localStorage.getItem('token');
+    const type = localStorage.getItem('tokenType');
+    const user = localStorage.getItem('user');
 
-    const user: User = {
-    id: data.id, 
-    username: data.username,
-    email: data.email,
-    role: data.role,
-    enabled: true,
-    phoneNumber: data.phoneNumber, 
-  };
-
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
-
-    return { user, accessToken: data.accessToken, refreshToken: data.refreshToken };
+    if (token && type && user) {
+      return {
+        token,
+        type,
+        user: JSON.parse(user),
+      };
+    }
+    return null;
   },
 
-  updateUser: async (id: number, user: Partial<User>): Promise<User> => {
-    const response = await api.put<User>(`/users/${id}`, user);
-    return response.data;
-  },
-
-  deleteUser: async (id: number): Promise<void> => {
-    await api.delete(`/users/${id}`);
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem('token');
   },
 };

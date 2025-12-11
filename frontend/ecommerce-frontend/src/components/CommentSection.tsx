@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 import { motion } from 'framer-motion';
-import { CommentService } from '../services/commentService';
+import { commentService } from '../services/commentService';
 import type { Comment } from '../types/Comment';
 import { useAuth } from '../context/AuthContext';   
 import '../assets/css/CommentSection.css';
@@ -28,7 +28,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
     try {
       setLoading(true);
       setError('');
-      const data = await CommentService.getCommentsByProductId(productId);
+      const data = await commentService.getCommentsByProduct(productId);
       setComments(data);
     } catch (err: any) {
       console.error('Erreur lors du chargement des commentaires:', err);
@@ -39,53 +39,55 @@ const CommentSection: React.FC<CommentSectionProps> = ({ productId }) => {
     }
   };
 
-  
-
   const handleSubmitComment = async (rating: number, comment: string) => {
-  if (!user) {
-    alert('Vous devez être connecté pour laisser un avis');
-    return;
-  }
-
-  try {
-    setSubmitting(true);
-    setError('');
-
-    if (editingComment) {
-      const updatedComment = await CommentService.updateComment(
-        editingComment.id,
-        rating,
-        comment
-      );
-      setComments(comments.map(c => c.id === updatedComment.id ? updatedComment : c));
-      setEditingComment(null);
-    } else {
-      const newComment = await CommentService.addComment(productId, rating, comment);
-      setComments([newComment, ...comments]);
+    if (!user) {
+      alert('Vous devez être connecté pour laisser un avis');
+      return;
     }
 
-    setShowForm(false);
-  } catch (err: any) {
-    console.error('Erreur lors de l\'ajout du commentaire:', err);
-    setError(err.response?.data || 'Erreur lors de l\'ajout du commentaire');
-  } finally {
-    setSubmitting(false);
-  }
-};
-
-const handleDeleteComment = async (commentId: number) => {
-  if (!user) return;
-
-  if (window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
     try {
-      await CommentService.deleteComment(commentId);
-      setComments(comments.filter(c => c.id !== commentId));
+      setSubmitting(true);
+      setError('');
+
+      if (editingComment) {
+        const updatedComment = await commentService.updateComment(
+          editingComment.id,
+          user.id,
+          { rating, comment }
+        );
+        setComments(comments.map(c => c.id === updatedComment.id ? updatedComment : c));
+        setEditingComment(null);
+      } else {
+        const newComment = await commentService.createComment(
+          productId,
+          user.id,
+          { rating, comment }
+        );
+        setComments([newComment, ...comments]);
+      }
+
+      setShowForm(false);
     } catch (err: any) {
-      console.error('Erreur lors de la suppression:', err);
-      alert(err.response?.data || 'Erreur lors de la suppression');
+      console.error('Erreur lors de l\'ajout du commentaire:', err);
+      setError(err.response?.data || 'Erreur lors de l\'ajout du commentaire');
+    } finally {
+      setSubmitting(false);
     }
-  }
-};
+  };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!user) return;
+
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+      try {
+        await commentService.deleteComment(commentId, user.id);
+        setComments(comments.filter(c => c.id !== commentId));
+      } catch (err: any) {
+        console.error('Erreur lors de la suppression:', err);
+        alert(err.response?.data || 'Erreur lors de la suppression');
+      }
+    }
+  };
 
   const handleEditComment = (comment: Comment) => {
     setEditingComment(comment);

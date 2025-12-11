@@ -1,5 +1,6 @@
 package com.example.demo.security;
 
+import com.example.demo.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -51,18 +52,25 @@ public class JwtService {
         return buildToken(new HashMap<>(), userDetails, refreshExpiration);
     }
 
-
     private String buildToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,
             long expiration
     ) {
-
         extraClaims.put("roles", userDetails.getAuthorities());
+
+        // ✅ Cast en User pour récupérer l'email
+        String subject;
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            subject = user.getEmail();  // ✅ EMAIL
+        } else {
+            subject = userDetails.getUsername();  // Fallback
+        }
 
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(subject)  // ✅ Email
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
@@ -71,7 +79,17 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+
+        // ✅ Comparer avec l'email
+        String emailToCompare;
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            emailToCompare = user.getEmail();  // ✅ EMAIL
+        } else {
+            emailToCompare = userDetails.getUsername();  // Fallback
+        }
+
+        return (username.equals(emailToCompare)) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

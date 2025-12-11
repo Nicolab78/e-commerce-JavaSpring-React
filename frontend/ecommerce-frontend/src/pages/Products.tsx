@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ProductService } from '../services/productService';
+import { productService } from '../services/productService';
 import ProductList from '../components/ProductList';
 import type { Product } from '../types/Product';
 import '../assets/css/Products.css';
@@ -17,7 +17,7 @@ const Products: React.FC = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const data = await ProductService.getAllProducts();
+      const data = await productService.getAllProducts();
       setProducts(data);
     } catch (err) {
       console.error('Erreur lors du chargement des produits:', err);
@@ -27,7 +27,7 @@ const Products: React.FC = () => {
     }
   };
 
-      if (loading) {
+  if (loading) {
     return (
       <div>
         <Skeleton height={40} width={300} />

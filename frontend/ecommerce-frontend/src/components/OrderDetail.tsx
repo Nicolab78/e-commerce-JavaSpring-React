@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { OrderService } from '../services/orderService';
+import { orderService } from '../services/orderService';
 import type { Order } from '../types/Order';
 import '../assets/css/OrderDetail.css';
 
@@ -23,7 +23,7 @@ const OrderDetail: React.FC = () => {
   const loadOrder = async (orderId: number) => {
     try {
       setLoading(true);
-      const data = await OrderService.getOrderById(orderId);
+      const data = await orderService.getOrderById(orderId);
       setOrder(data);
     } catch (err: any) {
       console.error('Erreur lors du chargement de la commande:', err);
@@ -124,7 +124,7 @@ const OrderDetail: React.FC = () => {
             {order.items.map((item) => (
               <div key={item.id} className="order-item">
                 <div className="item-info">
-                  <h3>{item.productName}</h3>
+                  <h3>{item.product.name}</h3>
                   <p className="item-price">{item.price.toFixed(2)} € × {item.quantity}</p>
                 </div>
                 <div className="item-subtotal">

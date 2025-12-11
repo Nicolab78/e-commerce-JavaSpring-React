@@ -1,40 +1,56 @@
 import api from './api';
-import type { Comment } from '../types/Comment';
+import type { Comment, CreateCommentDto, UpdateCommentDto } from '../types/Comment';
 
-export class CommentService {
-  static async getCommentsByProductId(productId: number): Promise<Comment[]> {
-    const response = await api.get(`/comments/products/${productId}`);
+export const commentService = {
+  createComment: async (
+    productId: number,
+    userId: number,
+    data: CreateCommentDto
+  ): Promise<Comment> => {
+    const response = await api.post(`/comments/product/${productId}/user/${userId}`, data);
     return response.data;
-  }
+  },
 
-  
-  static async addComment(productId: number, rating: number, comment: string): Promise<Comment> {
-    const response = await api.post(`/comments/products/${productId}`, {
-      rating,
-      comment
-    });
+  getCommentsByProduct: async (productId: number): Promise<Comment[]> => {
+    const response = await api.get(`/comments/product/${productId}`);
     return response.data;
-  }
+  },
 
-  static async updateComment(commentId: number, rating: number, comment: string): Promise<Comment> {
-    const response = await api.put(`/comments/${commentId}`, {
-      rating,
-      comment
-    });
+  getCommentsByUser: async (userId: number): Promise<Comment[]> => {
+    const response = await api.get(`/comments/user/${userId}`);
     return response.data;
-  }
+  },
 
-  static async deleteComment(commentId: number): Promise<void> {
-    await api.delete(`/comments/${commentId}`);
-  }
-
-  static async getAverageRating(productId: number): Promise<number> {
-    const response = await api.get(`/comments/products/${productId}/rating`);
+  getAllComments: async (): Promise<Comment[]> => {
+    const response = await api.get('/comments/all');
     return response.data;
-  }
+  },
 
-  static async getCommentCount(productId: number): Promise<number> {
-    const response = await api.get(`/comments/products/${productId}/count`);
+  getCommentById: async (id: number): Promise<Comment> => {
+    const response = await api.get(`/comments/${id}`);
     return response.data;
-  }
-}
+  },
+
+  updateComment: async (
+    commentId: number,
+    userId: number,
+    data: UpdateCommentDto
+  ): Promise<Comment> => {
+    const response = await api.put(`/comments/${commentId}/user/${userId}`, data);
+    return response.data;
+  },
+
+  deleteComment: async (commentId: number, userId: number): Promise<void> => {
+    await api.delete(`/comments/${commentId}/user/${userId}`);
+  },
+
+  getAverageRating: async (productId: number): Promise<number> => {
+    const response = await api.get(`/comments/product/${productId}/average`);
+    return response.data;
+  },
+
+  getCommentCount: async (productId: number): Promise<number> => {
+    const response = await api.get(`/comments/product/${productId}/count`);
+    return response.data;
+  },
+};

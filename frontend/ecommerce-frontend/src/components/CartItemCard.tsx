@@ -8,7 +8,7 @@ interface CartItemCardProps {
 }
 
 const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
-  const { updateQuantity, removeItem } = useCart();
+  const { updateCartItem, removeFromCart } = useCart();
   const [quantity, setQuantity] = useState(item.quantity);
   const [loading, setLoading] = useState(false);
 
@@ -18,10 +18,10 @@ const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
     try {
       setLoading(true);
       setQuantity(newQuantity);
-      await updateQuantity(item.id, newQuantity);
+      await updateCartItem(item.id, { quantity: newQuantity });
     } catch (error) {
       console.error('Erreur lors de la mise à jour:', error);
-      setQuantity(item.quantity); 
+      setQuantity(item.quantity);
       alert('Erreur lors de la mise à jour de la quantité');
     } finally {
       setLoading(false);
@@ -32,7 +32,7 @@ const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
     if (window.confirm('Supprimer cet article du panier ?')) {
       try {
         setLoading(true);
-        await removeItem(item.id);
+        await removeFromCart(item.id);
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
         alert('Erreur lors de la suppression');
@@ -44,23 +44,23 @@ const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
 
   return (
     <div className={`cart-item-card ${loading ? 'loading' : ''}`}>
-      <img src={item.productImageUrl} alt={item.productName} />
-      
+      <img src={item.product.imageUrl} alt={item.product.name} />
+
       <div className="item-details">
-        <h3>{item.productName}</h3>
-        <p className="item-price">{item.productPrice.toFixed(2)} €</p>
+        <h3>{item.product.name}</h3>
+        <p className="item-price">{item.product.price.toFixed(2)} €</p>
       </div>
 
       <div className="item-actions">
         <div className="quantity-controls">
-          <button 
+          <button
             onClick={() => handleQuantityChange(quantity - 1)}
             disabled={loading || quantity <= 1}
           >
             -
           </button>
-          <input 
-            type="number" 
+          <input
+            type="number"
             value={quantity}
             onChange={(e) => {
               const val = parseInt(e.target.value);
@@ -71,7 +71,7 @@ const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
             disabled={loading}
             min="1"
           />
-          <button 
+          <button
             onClick={() => handleQuantityChange(quantity + 1)}
             disabled={loading}
           >
@@ -83,8 +83,8 @@ const CartItemCard: React.FC<CartItemCardProps> = ({ item }) => {
           <span>Sous-total: {item.subtotal.toFixed(2)} €</span>
         </div>
 
-        <button 
-          onClick={handleRemove} 
+        <button
+          onClick={handleRemove}
           className="btn-remove"
           disabled={loading}
         >

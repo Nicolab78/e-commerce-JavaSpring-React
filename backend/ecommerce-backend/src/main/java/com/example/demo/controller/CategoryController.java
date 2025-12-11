@@ -2,15 +2,16 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import com.example.demo.entity.Category;
-import com.example.demo.services.CategoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.demo.dto.category.CategoryDto;
+import com.example.demo.dto.category.CreateCategoryDto;
+import com.example.demo.dto.category.UpdateCategoryDto;
+import com.example.demo.services.CategoryService;
 
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/api/categories")
@@ -18,17 +19,11 @@ import lombok.RequiredArgsConstructor;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    
-    @GetMapping("/test")
-	public String testCategoryController() {
-		return "Category Controller ok";
-	}
 
     @PostMapping("/create")
-    public ResponseEntity<?> createCategory(@RequestBody Category category) {
+    public ResponseEntity<?> createCategory(@RequestBody CreateCategoryDto createCategoryDto) {
         try {
-        	category.setId(null);
-            Category savedCategory = categoryService.saveCategory(category);
+            CategoryDto savedCategory = categoryService.createCategory(createCategoryDto);
             return new ResponseEntity<>(savedCategory, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -38,7 +33,7 @@ public class CategoryController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllCategories() {
         try {
-            List<Category> categories = categoryService.getAllCategories();
+            List<CategoryDto> categories = categoryService.getAllCategories();
             return ResponseEntity.ok(categories);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -48,25 +43,24 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         try {
-            Category category = categoryService.getCategoryById(id);
+            CategoryDto category = categoryService.getCategoryById(id);
             return ResponseEntity.ok(category);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("update/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category category) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody UpdateCategoryDto updateCategoryDto) {
         try {
-            category.setId(id);
-            Category updatedCategory = categoryService.updateCategory(category);
+            CategoryDto updatedCategory = categoryService.updateCategory(id, updateCategoryDto);
             return ResponseEntity.ok(updatedCategory);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         try {
             categoryService.deleteCategory(id);

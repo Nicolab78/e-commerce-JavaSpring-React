@@ -1,100 +1,86 @@
-header {
+.header {
   background-color: #343a40;
-  padding: 16px;
+  padding: 16px 0;
   color: white;
 }
 
-nav {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+.header .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
 }
 
-nav a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 20px;
-  transition: color 0.2s ease;
-  border: 1px solid white;
-  padding: 5px 10px; 
-  border-radius: 4px; 
-}
-
-nav a:hover {
-  color: black;
-  background-color: white;
-  border-color: white;
-}
-
-nav span {
-  margin-left: auto;
-  font-size: 14px;
-  font-weight: 400;
-}
-
-nav button {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 8px;
-}
-
-nav button:hover {
-  background-color: #c82333;
-}
-
-.header-nav {
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  padding: 16px;
-  background-color: #343a40;
-  color: white;
+  gap: 32px;
 }
 
-.nav-left,
-.nav-right {
+.logo {
+  color: white;
+  text-decoration: none;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.nav {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.nav-left a,
-.nav-right a {
+.nav a {
   color: white;
   text-decoration: none;
   font-weight: 500;
-}
-
-.nav-right span {
-  font-size: 14px;
-}
-
-.nav-right button {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 8px 12px;
+  font-size: 16px;
+  padding: 8px 16px;
+  border: 1px solid white;
   border-radius: 4px;
-  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav a:hover {
+  color: #343a40;
+  background-color: white;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.header-actions a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
   font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid white;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.header-actions a:hover {
+  color: #343a40;
+  background-color: white;
 }
 
 .cart-link {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
-.cart-badge {
+.badge {
   position: absolute;
   top: -8px;
   right: -8px;
@@ -106,6 +92,46 @@ nav button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: bold;
+}
+
+.user-name {
+  font-size: 14px;
+  color: white;
+}
+
+.btn-logout,
+.btn-login,
+.btn-register {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-logout:hover,
+.btn-login:hover,
+.btn-register:hover {
+  background-color: #c82333;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-actions {
+    margin-left: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }

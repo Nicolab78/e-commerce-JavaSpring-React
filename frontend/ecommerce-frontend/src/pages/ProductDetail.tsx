@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ProductService } from '../services/productService';
+import { productService } from '../services/productService';
 import ProductDetailCard from '../components/ProductDetailCard';
 import type { Product } from '../types/Product';
-
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +19,7 @@ const ProductDetail: React.FC = () => {
   const fetchProduct = async (productId: number) => {
     try {
       setLoading(true);
-      const data = await ProductService.getProductById(productId);
+      const data = await productService.getProductById(productId);
       setProduct(data);
     } catch (err) {
       setError('Produit introuvable');

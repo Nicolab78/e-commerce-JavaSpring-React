@@ -6,9 +6,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.entity.Product;
-import lombok.RequiredArgsConstructor;
+import com.example.demo.dto.product.CreateProductDto;
+import com.example.demo.dto.product.ProductDto;
+import com.example.demo.dto.product.UpdateProductDto;
 import com.example.demo.services.ProductService;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/products")
@@ -16,17 +19,11 @@ import com.example.demo.services.ProductService;
 public class ProductController {
 
     private final ProductService productService;
-    
-    @GetMapping("/test")
-	public String testProductController() {
-		return "Product Controller ok";
-	}
 
     @PostMapping("/create")
-    public ResponseEntity<?> createProduct(@RequestBody Product product) {
+    public ResponseEntity<?> createProduct(@RequestBody CreateProductDto createProductDto) {
         try {
-        	product.setId(null);
-            Product savedProduct = productService.saveProduct(product);
+            ProductDto savedProduct = productService.createProduct(createProductDto);
             return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -36,7 +33,7 @@ public class ProductController {
     @GetMapping("/all")
     public ResponseEntity<?> getAllProducts() {
         try {
-            List<Product> products = productService.getAllProducts();
+            List<ProductDto> products = productService.getAllProducts();
             return ResponseEntity.ok(products);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -46,25 +43,24 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         try {
-            Product product = productService.getProductById(id);
+            ProductDto product = productService.getProductById(id);
             return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody UpdateProductDto updateProductDto) {
         try {
-            product.setId(id);
-            Product updatedProduct = productService.updateProduct(product);
+            ProductDto updatedProduct = productService.updateProduct(id, updateProductDto);
             return ResponseEntity.ok(updatedProduct);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
         try {
             productService.deleteProduct(id);
@@ -73,11 +69,20 @@ public class ProductController {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-    
+
+    @GetMapping("/bestsellers")
+    public ResponseEntity<?> getBestSellers(@RequestParam(defaultValue = "8") int limit) {
+        try {
+            return ResponseEntity.ok(productService.getBestSellers(limit));
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<?> getProductsByCategory(@PathVariable Long categoryId) {
         try {
-            List<Product> products = productService.getProductsByCategory(categoryId);
+            List<ProductDto> products = productService.getProductsByCategory(categoryId);
             return ResponseEntity.ok(products);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

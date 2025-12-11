@@ -26,8 +26,11 @@ public class OrderItem {
     @JoinColumn(name = "product_id")
     private Product product;
 
-
     private Integer quantity;
 
     private Double price;
+
+    public Double getSubtotal() {
+        return price * quantity;
+    }
 }

@@ -1,11 +1,13 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.AuthenticationRequest;
-import com.example.demo.dto.AuthenticationResponse;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.auth.AuthResponseDto;
+import com.example.demo.dto.auth.LoginDto;
+import com.example.demo.dto.auth.RegisterDto;
 import com.example.demo.services.AuthenticationService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,29 +20,29 @@ public class AuthenticationController {
     private final AuthenticationService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
-            @Valid @RequestBody RegisterRequest request
+    public ResponseEntity<AuthResponseDto> register(
+            @Valid @RequestBody RegisterDto registerDto
     ) {
-        AuthenticationResponse response = authService.register(request);
+        AuthResponseDto response = authService.register(registerDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> authenticate(
-            @Valid @RequestBody AuthenticationRequest request
+    public ResponseEntity<AuthResponseDto> authenticate(
+            @Valid @RequestBody LoginDto loginDto
     ) {
-        AuthenticationResponse response = authService.authenticate(request);
+        AuthResponseDto response = authService.authenticate(loginDto);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthenticationResponse> refreshToken(
+    public ResponseEntity<AuthResponseDto> refreshToken(
             @RequestHeader("Authorization") String refreshToken
     ) {
         String token = refreshToken.substring(7);
-        AuthenticationResponse response = authService.refreshToken(token);
+        AuthResponseDto response = authService.refreshToken(token);
         return ResponseEntity.ok(response);
     }
 

@@ -1,70 +1,78 @@
 package com.example.demo.services;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.category.CategoryDto;
+import com.example.demo.dto.category.CreateCategoryDto;
+import com.example.demo.dto.category.UpdateCategoryDto;
 import com.example.demo.entity.Category;
+import com.example.demo.repository.CategoryRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import com.example.demo.repository.CategoryRepository;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class CategoryService implements ICategoryService {
-	
-	private final CategoryRepository categoryRepository;
 
-	@Override
-	public Category saveCategory(Category category) {
-	    if (category.getId() != null) {
-	        Optional<Category> existingCategory = categoryRepository.findById(category.getId());
-	        if (existingCategory.isPresent()) {
-	            throw new RuntimeException("Category with ID " + category.getId() + " already exists");
-	        }
-	    }
+    private final CategoryRepository categoryRepository;
 
-	    return categoryRepository.save(category);
-	}
+    @Override
+    public CategoryDto createCategory(CreateCategoryDto createCategoryDto) {
+        Category category = new Category();
+        category.setName(createCategoryDto.getName());
+        category.setDescription(createCategoryDto.getDescription());
 
-	@Override
-	public List<Category> getAllCategories() {
-		
-		List<Category> categories = categoryRepository.findAll();
-		if (categories.isEmpty()) {
-			throw new RuntimeException("No categories found.");
-		}
-		return categories;
-	}
+        categoryRepository.save(category);
+        return mapToDto(category);
+    }
 
-	@Override
-	public Category getCategoryById(Long id) {
-		
-		return categoryRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Category not found."));
-	}
+    @Override
+    public List<CategoryDto> getAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        if (categories.isEmpty()) {
+            throw new RuntimeException("No categories found.");
+        }
+        return categories.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 
-	@Override
-	public Category updateCategory(Category category) {
-		
-		Category existingCategory = categoryRepository.findById(category.getId())
-				.orElseThrow(() -> new RuntimeException("Category not found."));
-		
-		existingCategory.setName(category.getName());
-		existingCategory.setDescription(category.getDescription());
-		return categoryRepository.save(existingCategory);
-	
-	}
+    @Override
+    public CategoryDto getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found."));
+        return mapToDto(category);
+    }
 
-	@Override
-	public void deleteCategory(Long id) {
-		
-		Category existingCategory = categoryRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Category not found."));
-		categoryRepository.delete(existingCategory);
-		
-	}
+    @Override
+    public CategoryDto updateCategory(Long id, UpdateCategoryDto updateCategoryDto) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found."));
 
+        category.setName(updateCategoryDto.getName());
+        category.setDescription(updateCategoryDto.getDescription());
+
+        categoryRepository.save(category);
+        return mapToDto(category);
+    }
+
+    @Override
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found."));
+        categoryRepository.delete(category);
+    }
+
+    private CategoryDto mapToDto(Category category) {
+        return CategoryDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .build();
+    }
 }

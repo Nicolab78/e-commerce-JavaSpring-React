@@ -11,6 +11,7 @@ import OrderDetail from './components/OrderDetail';
 import Orders from './components/Orders';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>
+        <Footer />
       </Router>
       </CartProvider>
     </AuthProvider>

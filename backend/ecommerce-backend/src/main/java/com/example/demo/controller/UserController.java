@@ -4,14 +4,12 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.dto.UserRequestDto;
-import com.example.demo.dto.UserResponseDto;
-import com.example.demo.service.UserService;
+import com.example.demo.dto.user.UpdateUserDto;
+import com.example.demo.dto.user.UserDto;
+import com.example.demo.services.UserService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,43 +19,43 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDto> createUser(
-            @Valid @RequestBody UserRequestDto userRequestDto
-    ) {
-        UserResponseDto savedUser = userService.saveUser(userRequestDto);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(savedUser);
-    }
-
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<UserResponseDto> users = userService.getAllUsers();
-        return ResponseEntity.ok(users);
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            List<UserDto> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
-        UserResponseDto user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
+        try {
+            UserDto user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(
-            @PathVariable Long id,
-            @Valid @RequestBody UserRequestDto userRequestDto
-    ) {
-        UserResponseDto updatedUser = userService.updateUser(id, userRequestDto);
-        return ResponseEntity.ok(updatedUser);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UpdateUserDto updateUserDto) {
+        try {
+            UserDto updatedUser = userService.updateUser(id, updateUserDto);
+            return ResponseEntity.ok(updatedUser);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
     }
 }

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { OrderService } from '../services/orderService';
+import { orderService } from '../services/orderService';
+import { useAuth } from '../context/AuthContext';
 import type { Order } from '../types/Order';
 import '../assets/css/Orders.css';
 
 const Orders: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,9 +16,11 @@ const Orders: React.FC = () => {
   }, []);
 
   const loadOrders = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      const data = await OrderService.getUserOrders();
+      const data = await orderService.getOrdersByUserId(user.id);
       setOrders(data);
     } catch (error) {
       console.error('Erreur lors du chargement des commandes:', error);
@@ -82,7 +86,7 @@ const Orders: React.FC = () => {
             <div className="order-items">
               {order.items.slice(0, 3).map((item) => (
                 <span key={item.id} className="order-item-preview">
-                  {item.productName} x{item.quantity}
+                  {item.product.name} x{item.quantity}
                 </span>
               ))}
               {order.items.length > 3 && (

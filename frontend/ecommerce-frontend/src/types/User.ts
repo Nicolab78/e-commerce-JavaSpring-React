@@ -3,26 +3,13 @@ export interface User {
   username: string;
   email: string;
   role: string;
-  enabled: boolean;  
+  enabled: boolean;
   phoneNumber?: string;
 }
 
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
+export interface UpdateUserDto {
   username: string;
   email: string;
-  role: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
+  password?: string;
   phoneNumber?: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
 }

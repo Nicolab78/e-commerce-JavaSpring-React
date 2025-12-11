@@ -32,7 +32,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
     <div className="comment-item">
       <div className="comment-header">
         <div className="comment-user-info">
-          <strong>{comment.userName}</strong>
+          <strong>{comment.username}</strong>
           <div className="star-rating-display">
             {[1, 2, 3, 4, 5].map((star) => (
               <span key={star} className={`star ${star <= comment.rating ? 'filled' : 'empty'}`}>

@@ -1,17 +1,22 @@
 package com.example.demo.services;
 
-import com.example.demo.dto.OrderItemDTO;
-import com.example.demo.dto.OrderRequest;
-import com.example.demo.dto.OrderResponse;
-import com.example.demo.entity.*;
-import com.example.demo.repository.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.dto.order.CreateOrderDto;
+import com.example.demo.dto.order.OrderDto;
+import com.example.demo.dto.order.OrderItemDto;
+import com.example.demo.dto.order.UpdateOrderDto;
+import com.example.demo.dto.product.ProductDto;
+import com.example.demo.dto.user.UserDto;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -22,8 +27,10 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductService productService;
+    private final UserService userService;
 
-    public OrderResponse createOrderFromCart(Long userId, OrderRequest request) {
+    public OrderDto createOrder(Long userId, CreateOrderDto createOrderDto) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
@@ -34,8 +41,13 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-
-        Order order = mapRequestToEntity(request, user, cart);
+        Order order = Order.builder()
+                .user(user)
+                .totalPrice(cart.getTotalPrice())
+                .status(OrderStatus.PENDING)
+                .orderDate(LocalDateTime.now())
+                .shippingAddress(createOrderDto.getShippingAddress())
+                .build();
 
         for (CartItem cartItem : cart.getItems()) {
             Product product = cartItem.getProduct();
@@ -62,58 +74,83 @@ public class OrderService {
         cart.getItems().clear();
         cartRepository.save(cart);
 
-        return mapToResponse(savedOrder);
+        return mapToDto(savedOrder);
     }
 
-    public List<OrderResponse> getOrdersByUserId(Long userId) {
-        return orderRepository.findByUserIdOrderByOrderDateDesc(userId)
-                .stream()
-                .map(this::mapToResponse)
+    public List<OrderDto> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        if (orders.isEmpty()) {
+            throw new RuntimeException("No orders found.");
+        }
+        return orders.stream()
+                .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    public OrderResponse getOrderById(Long orderId, Long userId) {
-        Order order = orderRepository.findById(orderId)
+    public List<OrderDto> getOrdersByUserId(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        if (orders.isEmpty()) {
+            throw new RuntimeException("No orders found for this user.");
+        }
+        return orders.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
+    public OrderDto getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        return mapToDto(order);
+    }
+
+    public OrderDto updateOrderStatus(Long id, UpdateOrderDto updateOrderDto) {
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        if (!order.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+        try {
+            OrderStatus newStatus = OrderStatus.valueOf(updateOrderDto.getStatus());
+            order.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status: " + updateOrderDto.getStatus());
         }
 
-        return mapToResponse(order);
+        orderRepository.save(order);
+        return mapToDto(order);
     }
 
-    private Order mapRequestToEntity(OrderRequest request, User user, Cart cart) {
-        return Order.builder()
-                .user(user)
-                .totalPrice(cart.getTotalPrice())
-                .status(OrderStatus.PENDING)
-                .orderDate(LocalDateTime.now())
-                .shippingAddress(request.getShippingAddress())
-                .build();
+    public void deleteOrder(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        orderRepository.delete(order);
     }
 
-    private OrderResponse mapToResponse(Order order) {
-        return OrderResponse.builder()
+    private OrderDto mapToDto(Order order) {
+        UserDto userDto = userService.mapToDto(order.getUser());
+
+        List<OrderItemDto> itemDtos = order.getItems().stream()
+                .map(this::mapItemToDto)
+                .collect(Collectors.toList());
+
+        return OrderDto.builder()
                 .id(order.getId())
-                .userId(order.getUser().getId())
-                .items(order.getItems().stream()
-                        .map(this::mapItemToDto)
-                        .collect(Collectors.toList()))
+                .user(userDto)
+                .items(itemDtos)
                 .totalPrice(order.getTotalPrice())
-                .status(order.getStatus())
+                .status(order.getStatus().name())
                 .orderDate(order.getOrderDate())
                 .shippingAddress(order.getShippingAddress())
                 .build();
     }
 
-    private OrderItemDTO mapItemToDto(OrderItem item) {
-        return OrderItemDTO.builder()
+    private OrderItemDto mapItemToDto(OrderItem item) {
+        ProductDto productDto = productService.mapToDto(item.getProduct());
+
+        return OrderItemDto.builder()
                 .id(item.getId())
-                .productId(item.getProduct().getId())
-                .productName(item.getProduct().getName())
+                .product(productDto)
                 .quantity(item.getQuantity())
                 .price(item.getPrice())
+                .subtotal(item.getSubtotal())
                 .build();
     }
 }

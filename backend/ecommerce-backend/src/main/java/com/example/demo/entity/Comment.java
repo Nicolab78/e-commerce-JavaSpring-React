@@ -2,6 +2,7 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Comment {
     
     @Id
@@ -33,7 +35,8 @@ public class Comment {
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    
+
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

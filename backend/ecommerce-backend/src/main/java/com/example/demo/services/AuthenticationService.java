@@ -1,17 +1,20 @@
 package com.example.demo.services;
 
-import com.example.demo.dto.AuthenticationRequest;
-import com.example.demo.dto.AuthenticationResponse;
-import com.example.demo.dto.RegisterRequest;
-import com.example.demo.entity.Role;
-import com.example.demo.entity.User;
-import com.example.demo.repository.UserRepository;
-import com.example.demo.security.JwtService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.auth.AuthResponseDto;
+import com.example.demo.dto.auth.LoginDto;
+import com.example.demo.dto.auth.RegisterDto;
+import com.example.demo.dto.user.UserDto;
+import com.example.demo.entity.Role;
+import com.example.demo.entity.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.security.JwtService;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Service d'authentification
@@ -29,22 +32,23 @@ public class AuthenticationService {
     /**
      * Inscription d'un nouvel utilisateur
      */
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthResponseDto register(RegisterDto registerDto) {
         // Vérifie si l'email existe déjà
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(registerDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
         // Crée l'utilisateur
         var user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .username(registerDto.getUsername())
+                .email(registerDto.getEmail())
+                .password(passwordEncoder.encode(registerDto.getPassword()))
                 .role(Role.USER)
                 .enabled(true)
                 .accountNonExpired(true)
                 .accountNonLocked(true)
                 .credentialsNonExpired(true)
+                .phoneNumber(registerDto.getPhoneNumber())
                 .build();
 
         userRepository.save(user);
@@ -52,41 +56,47 @@ public class AuthenticationService {
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
+        // Créer UserDto
+        UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .enabled(user.isEnabled())
+                .phoneNumber(user.getPhoneNumber())
                 .build();
+
+        return new AuthResponseDto(jwtToken, userDto);
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthResponseDto authenticate(LoginDto loginDto) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
+                        loginDto.getEmail(),
+                        loginDto.getPassword()
                 )
         );
 
-        var user = userRepository.findByEmail(request.getEmail())
+        var user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
 
-        return AuthenticationResponse.builder()
-                .accessToken(jwtToken)
-                .refreshToken(refreshToken)
+        // Créer UserDto
+        UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .enabled(user.isEnabled())
+                .phoneNumber(user.getPhoneNumber())
                 .build();
+
+        return new AuthResponseDto(jwtToken, userDto);
     }
 
-    public AuthenticationResponse refreshToken(String refreshToken) {
+    public AuthResponseDto refreshToken(String refreshToken) {
 
         final String userEmail = jwtService.extractUsername(refreshToken);
 
@@ -99,14 +109,17 @@ public class AuthenticationService {
 
                 var accessToken = jwtService.generateToken(user);
 
-                return AuthenticationResponse.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
+                // Créer UserDto
+                UserDto userDto = UserDto.builder()
                         .id(user.getId())
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .role(user.getRole().name())
+                        .enabled(user.isEnabled())
+                        .phoneNumber(user.getPhoneNumber())
                         .build();
+
+                return new AuthResponseDto(accessToken, userDto);
             }
         }
         throw new RuntimeException("Invalid refresh token");

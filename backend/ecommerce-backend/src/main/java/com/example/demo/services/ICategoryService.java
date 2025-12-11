@@ -2,14 +2,14 @@ package com.example.demo.services;
 
 import java.util.List;
 
-import com.example.demo.entity.Category;
+import com.example.demo.dto.category.CategoryDto;
+import com.example.demo.dto.category.CreateCategoryDto;
+import com.example.demo.dto.category.UpdateCategoryDto;
 
 public interface ICategoryService {
-	
-	Category saveCategory(Category category);
-	List<Category> getAllCategories();
-	Category getCategoryById(Long id);
-	Category updateCategory(Category category);
-	void deleteCategory(Long id);
-
+    CategoryDto createCategory(CreateCategoryDto createCategoryDto);
+    List<CategoryDto> getAllCategories();
+    CategoryDto getCategoryById(Long id);
+    CategoryDto updateCategory(Long id, UpdateCategoryDto updateCategoryDto);
+    void deleteCategory(Long id);
 }

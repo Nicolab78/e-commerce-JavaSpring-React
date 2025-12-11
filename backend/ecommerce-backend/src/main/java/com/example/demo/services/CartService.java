@@ -1,115 +1,116 @@
 package com.example.demo.services;
 
-import com.example.demo.dto.CartItemDTO;
-import com.example.demo.dto.CartRequest;
-import com.example.demo.dto.CartResponse;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.cart.AddToCartDto;
+import com.example.demo.dto.cart.CartDto;
+import com.example.demo.dto.cart.CartItemDto;
+import com.example.demo.dto.cart.UpdateCartItemDto;
+import com.example.demo.dto.product.ProductDto;
 import com.example.demo.entity.Cart;
 import com.example.demo.entity.CartItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.User;
-import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.CartItemRepository;
+import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.stream.Collectors;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class CartService {
+public class CartService implements ICartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final ProductService productService;
 
-    public CartResponse getCartByUserId(Long userId) {
+    @Override
+    public CartDto getCartByUserId(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCartForUser(userId));
-        return mapToResponse(cart);
+        return mapToDto(cart);
     }
 
-
-    public CartResponse addItemToCart(Long userId, CartRequest request) {
+    @Override
+    public CartDto addToCart(Long userId, AddToCartDto addToCartDto) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCartForUser(userId));
 
-        Product product = productRepository.findById(request.getProductId())
+        Product product = productRepository.findById(addToCartDto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        if (product.getStockQuantity() < request.getQuantity()) {
-            throw new RuntimeException("Stock insuffisant");
-        }
+        Optional<CartItem> existingItem = cartItemRepository
+                .findByCartIdAndProductId(cart.getId(), product.getId());
 
-        CartItem cartItem = cartItemRepository
-                .findByCartIdAndProductId(cart.getId(), request.getProductId())
-                .orElse(null);
-
-        if (cartItem != null) {
-            cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
+        if (existingItem.isPresent()) {
+            CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + addToCartDto.getQuantity());
+            cartItemRepository.save(item);
         } else {
-            cartItem = mapRequestToEntity(request, cart, product);
-            cart.getItems().add(cartItem);
+            CartItem newItem = CartItem.builder()
+                    .cart(cart)
+                    .product(product)
+                    .quantity(addToCartDto.getQuantity())
+                    .build();
+            cart.getItems().add(newItem);
+            cartItemRepository.save(newItem);
         }
 
-        cartItemRepository.save(cartItem);
-        return mapToResponse(cart);
+        return mapToDto(cart);
     }
 
-
-
-    public CartResponse updateCartItemQuantity(Long userId, Long cartItemId, Integer quantity) {
+    @Override
+    public CartDto updateCartItem(Long userId, Long cartItemId, UpdateCartItemDto updateCartItemDto) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
+        CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
-        if (!cartItem.getCart().getId().equals(cart.getId())) {
-            throw new RuntimeException("Unauthorized");
+        if (!item.getCart().getId().equals(cart.getId())) {
+            throw new RuntimeException("Cart item does not belong to this user");
         }
 
-        if (quantity <= 0) {
-            cart.getItems().remove(cartItem);
-            cartItemRepository.delete(cartItem);
-        } else {
-            if (cartItem.getProduct().getStockQuantity() < quantity) {
-                throw new RuntimeException("Stock insuffisant");
-            }
-            cartItem.setQuantity(quantity);
-            cartItemRepository.save(cartItem);
-        }
+        item.setQuantity(updateCartItemDto.getQuantity());
+        cartItemRepository.save(item);
 
-        return mapToResponse(cart);
+        return mapToDto(cart);
     }
 
-    public CartResponse removeItemFromCart(Long userId, Long cartItemId) {
+    @Override
+    public CartDto removeFromCart(Long userId, Long cartItemId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        CartItem cartItem = cartItemRepository.findById(cartItemId)
+        CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
-        if (!cartItem.getCart().getId().equals(cart.getId())) {
-            throw new RuntimeException("Unauthorized");
+        if (!item.getCart().getId().equals(cart.getId())) {
+            throw new RuntimeException("Cart item does not belong to this user");
         }
 
-        cart.getItems().remove(cartItem);
-        cartItemRepository.delete(cartItem);
+        cart.getItems().remove(item);
+        cartItemRepository.delete(item);
 
-        return mapToResponse(cart);
+        return mapToDto(cart);
     }
 
+    @Override
     public void clearCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
         cart.getItems().clear();
-        cartRepository.save(cart);
+        cartItemRepository.deleteAll(cart.getItems());
     }
 
     private Cart createCartForUser(Long userId) {
@@ -123,17 +124,10 @@ public class CartService {
         return cartRepository.save(cart);
     }
 
-    private CartItem mapRequestToEntity(CartRequest request, Cart cart, Product product) {
-        return CartItem.builder()
-                .cart(cart)
-                .product(product)
-                .quantity(request.getQuantity())
-                .build();
-    }
-
-    private CartResponse mapToResponse(Cart cart) {
-        return CartResponse.builder()
+    private CartDto mapToDto(Cart cart) {
+        return CartDto.builder()
                 .id(cart.getId())
+                .userId(cart.getUser().getId())
                 .items(cart.getItems().stream()
                         .map(this::mapItemToDto)
                         .collect(Collectors.toList()))
@@ -141,13 +135,12 @@ public class CartService {
                 .build();
     }
 
-    private CartItemDTO mapItemToDto(CartItem item) {
-        return CartItemDTO.builder()
+    private CartItemDto mapItemToDto(CartItem item) {
+        ProductDto productDto = productService.mapToDto(item.getProduct());
+
+        return CartItemDto.builder()
                 .id(item.getId())
-                .productId(item.getProduct().getId())
-                .productName(item.getProduct().getName())
-                .productImageUrl(item.getProduct().getImageUrl())
-                .productPrice(item.getProduct().getPrice())
+                .product(productDto)
                 .quantity(item.getQuantity())
                 .subtotal(item.getSubtotal())
                 .build();

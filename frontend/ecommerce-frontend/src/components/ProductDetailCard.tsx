@@ -11,7 +11,7 @@ interface ProductDetailCardProps {
   product: Product;
 }
 
-const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
+const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
@@ -26,7 +26,7 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
 
     try {
       setAdding(true);
-      await addToCart(product.id, 1);
+      await addToCart({ productId: product.id, quantity: 1 });
       alert('Produit ajouté au panier !');
     } catch (error) {
       alert('Erreur lors de l\'ajout au panier');
@@ -51,13 +51,17 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
                 ? `En stock (${product.stockQuantity})` 
                 : 'Rupture de stock'}
             </p>
-            <button onClick={handleAddToCart}
-            disabled={product.stockQuantity === 0 || adding}
-           >
-          {adding ? 'Ajout...' : 'Ajouter au panier'}
+            <button 
+              onClick={handleAddToCart}
+              disabled={product.stockQuantity === 0 || adding}
+            >
+              {adding ? 'Ajout...' : 'Ajouter au panier'}
             </button>
 
-            <button onClick={() => setShowComments(prev => !prev)} className="btn-toggle-comments">
+            <button 
+              onClick={() => setShowComments(prev => !prev)} 
+              className="btn-toggle-comments"
+            >
               {showComments ? 'Masquer les commentaires' : 'Afficher les commentaires'}
             </button>
           </div>
@@ -65,14 +69,14 @@ const ProductDetailCard: React.FC<ProductDetailCardProps> = ({ product}) => {
       </div>
 
       {showComments && (
-  <motion.div
-    initial={{ opacity: 0, y: 40 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.8, ease: 'easeOut' }}
-  >
-    <CommentSection productId={product.id}/>
-  </motion.div>
-)}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+        >
+          <CommentSection productId={product.id} />
+        </motion.div>
+      )}
     </>
   );
 };
