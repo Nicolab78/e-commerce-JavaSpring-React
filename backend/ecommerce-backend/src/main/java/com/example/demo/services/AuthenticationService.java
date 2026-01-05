@@ -13,13 +13,10 @@ import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtService;
+import com.example.demo.security.UserDetailsImpl;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Service d'authentification
- * Gère l'inscription, la connexion et le rafraîchissement des tokens
- */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -29,16 +26,11 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    /**
-     * Inscription d'un nouvel utilisateur
-     */
     public AuthResponseDto register(RegisterDto registerDto) {
-        // Vérifie si l'email existe déjà
         if (userRepository.findByEmail(registerDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
 
-        // Crée l'utilisateur
         var user = User.builder()
                 .username(registerDto.getUsername())
                 .email(registerDto.getEmail())
@@ -53,10 +45,10 @@ public class AuthenticationService {
 
         userRepository.save(user);
 
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        var userDetails = new UserDetailsImpl(user);
+        var jwtToken = jwtService.generateToken(userDetails);
+        var refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        // Créer UserDto
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -80,10 +72,10 @@ public class AuthenticationService {
         var user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var jwtToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        var userDetails = new UserDetailsImpl(user);  // ✅ Wrapper
+        var jwtToken = jwtService.generateToken(userDetails);
+        var refreshToken = jwtService.generateRefreshToken(userDetails);
 
-        // Créer UserDto
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -97,19 +89,16 @@ public class AuthenticationService {
     }
 
     public AuthResponseDto refreshToken(String refreshToken) {
-
         final String userEmail = jwtService.extractUsername(refreshToken);
 
         if (userEmail != null) {
-
             var user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            if (jwtService.isTokenValid(refreshToken, user)) {
+            var userDetails = new UserDetailsImpl(user);
+            if (jwtService.isTokenValid(refreshToken, userDetails)) {
+                var accessToken = jwtService.generateToken(userDetails);
 
-                var accessToken = jwtService.generateToken(user);
-
-                // Créer UserDto
                 UserDto userDto = UserDto.builder()
                         .id(user.getId())
                         .username(user.getUsername())

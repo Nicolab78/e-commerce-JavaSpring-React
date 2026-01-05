@@ -25,44 +25,44 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-
                 .cors(cors -> {})
-
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated()
 
-                        .requestMatchers("/api/products/**").authenticated()
-                        .requestMatchers("/api/categories/**").authenticated()
-                        .requestMatchers("/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/categories/**").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
 
                         .requestMatchers("/api/cart/**").authenticated()
                         .requestMatchers("/api/orders/**").authenticated()
-
                         .requestMatchers("/api/users/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
-
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
                 .authenticationProvider(authenticationProvider())
-
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
